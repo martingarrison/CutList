@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#5b7fa6">
@@ -220,7 +220,7 @@ input[type="text"], input[type="number"], textarea, select {
   border-radius: var(--radius-sm);
   padding: 10px 12px;
   font-family: 'DM Sans', sans-serif;
-  font-size: 0.92rem; color: var(--text);
+  font-size: 16px; color: var(--text);
   width: 100%;
   transition: border-color 150ms, box-shadow 150ms;
   -webkit-appearance: none;
@@ -263,44 +263,90 @@ textarea { resize: vertical; min-height: 64px; }
 .btn-sm { padding: 7px 12px; font-size: 0.8rem; }
 .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
 
-/* ── CUT LIST TABLE ── */
-.cut-list-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-.cut-table {
-  width: 100%; border-collapse: collapse;
-  font-size: 0.8rem; min-width: 480px;
-}
-.cut-table th {
-  background: var(--accent); color: var(--accent-text);
-  padding: 9px 10px; text-align: left;
-  font-size: 0.72rem; font-weight: 600;
-  text-transform: uppercase; letter-spacing: 0.04em;
-  white-space: nowrap;
-}
-.cut-table th:first-child { border-radius: var(--radius-sm) 0 0 0; }
-.cut-table th:last-child { border-radius: 0 var(--radius-sm) 0 0; }
-.cut-table td {
-  padding: 8px 10px;
-  border-bottom: 1px solid var(--border);
-  vertical-align: top;
-}
-.cut-table tr:last-child td { border-bottom: none; }
-.cut-table tr.cab-group-hd td {
+/* ── CUT LIST CARDS ── */
+.cut-group { margin-bottom: 12px; }
+.cut-group-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px;
   background: var(--wood-soft);
-  color: var(--wood);
-  font-weight: 600; font-size: 0.8rem;
-  padding: 6px 10px;
-  letter-spacing: 0.02em;
+  border: 1px solid rgba(200,149,106,0.25);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
 }
-.cut-table tr:nth-child(even):not(.cab-group-hd) td { background: var(--surface-2); }
-.dim-val { font-weight: 600; font-variant-numeric: tabular-nums; }
+.cut-group-header-icon {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--wood); flex-shrink: 0;
+}
+.cut-group-header-name {
+  font-weight: 700; font-size: 0.82rem;
+  color: var(--wood); flex: 1;
+  letter-spacing: 0.02em; text-transform: uppercase;
+}
+.cut-group-header-count {
+  font-size: 0.72rem; color: var(--wood);
+  opacity: 0.7;
+}
+.cut-card-list {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.cut-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: auto auto;
+  gap: 2px 10px;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+}
+.cut-card:last-child { border-bottom: none; }
+.cut-card:nth-child(even) { background: var(--surface-2); }
+.cut-card-num {
+  grid-row: 1 / 3;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--accent-soft); color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.72rem; font-weight: 700; flex-shrink: 0;
+  align-self: center;
+}
+.cut-card-part {
+  font-weight: 600; font-size: 0.88rem;
+  color: var(--text); grid-column: 2;
+}
+.cut-card-dims {
+  grid-column: 2;
+  display: flex; align-items: center; gap: 6px;
+  flex-wrap: wrap;
+}
+.cut-card-right {
+  grid-row: 1 / 3; grid-column: 3;
+  display: flex; flex-direction: column;
+  align-items: flex-end; gap: 4px; align-self: center;
+}
+.dim-pill {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 0.78rem; color: var(--text-muted);
+}
+.dim-pill strong {
+  font-weight: 700; font-variant-numeric: tabular-nums;
+  color: var(--text); font-size: 0.82rem;
+}
+.dim-sep { color: var(--border); font-size: 0.8rem; }
 .qty-badge {
   display: inline-flex; align-items: center; justify-content: center;
   background: var(--accent-soft); color: var(--accent);
-  border-radius: 4px; padding: 1px 7px;
+  border-radius: 4px; padding: 2px 8px;
   font-weight: 700; font-size: 0.75rem;
 }
-.mat-ply34 { color: var(--wood); font-size: 0.75rem; }
-.mat-ply18 { color: var(--text-muted); font-size: 0.75rem; }
+.mat-chip {
+  font-size: 0.7rem; font-weight: 600; padding: 2px 7px;
+  border-radius: 20px; white-space: nowrap;
+}
+.mat-chip.ply34 { background: var(--wood-soft); color: var(--wood); }
+.mat-chip.ply18 { background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); }
 
 /* ── MATERIAL SUMMARY CARDS ── */
 .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
@@ -474,21 +520,8 @@ textarea { resize: vertical; min-height: 64px; }
   <!-- Filter chips -->
   <div class="chips" id="cutlist-chips"></div>
 
-  <!-- Table -->
-  <div class="form-card" style="padding:0;overflow:hidden;">
-    <div class="cut-list-wrap">
-      <table class="cut-table" id="cut-table-el">
-        <thead>
-          <tr>
-            <th>#</th><th>Cabinet</th><th>Part</th>
-            <th>W (in)</th><th>L (in)</th><th>Qty</th>
-            <th>Material</th>
-          </tr>
-        </thead>
-        <tbody id="cut-table-body"></tbody>
-      </table>
-    </div>
-  </div>
+  <!-- Card list -->
+  <div id="cut-card-container"></div>
 
   <!-- Material Summary -->
   <div class="section-hd" style="margin-top:20px;">
@@ -965,57 +998,72 @@ function renderCutList() {
     });
   });
 
-  // Build table
-  const tbody = document.getElementById('cut-table-body');
-  let rows = '';
-  let rowNum = 1;
+  // Build card groups
+  const container = document.getElementById('cut-card-container');
   const filtered = activeFilter === 'all' ? cabs : cabs.filter(c => c.id === activeFilter);
 
-  for (const cab of filtered) {
-    rows += `<tr class="cab-group-hd"><td colspan="7">${esc(cab.name)}</td></tr>`;
-    const parts = calcCuts(cab, s);
-    for (const p of parts) {
-      const matClass = p.mat === '3/4 in Plywood' ? 'mat-ply34' : 'mat-ply18';
-      rows += `<tr>
-        <td>${rowNum++}</td>
-        <td style="font-size:0.78rem;color:var(--text-muted)">${esc(cab.name)}</td>
-        <td style="font-weight:500">${p.part}</td>
-        <td class="dim-val frac">${toFrac(p.w)}"</td>
-        <td class="dim-val frac">${toFrac(p.l)}"</td>
-        <td><span class="qty-badge">${p.qty}</span></td>
-        <td class="${matClass}">${p.mat}</td>
-      </tr>`;
-    }
+  if (!filtered.length) {
+    container.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      <h3>No cabinets yet</h3>
+      <p>Add cabinets in the Cabinets tab to generate a cut list.</p>
+    </div>`;
+    document.getElementById('summary-grid').innerHTML = '';
+    return;
   }
 
-  if (!filtered.length || rows === '') {
-    rows = `<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px;">No cabinets in this project yet.</td></tr>`;
+  let rowNum = 1;
+  let html = '';
+  for (const cab of filtered) {
+    const parts = calcCuts(cab, s);
+    const cards = parts.map(p => {
+      const matClass = p.mat === '3/4 in Plywood' ? 'ply34' : 'ply18';
+      const matLabel = p.mat === '3/4 in Plywood' ? '3/4"' : '1/8"';
+      return `<div class="cut-card">
+        <div class="cut-card-num">${rowNum++}</div>
+        <div class="cut-card-part">${p.part}</div>
+        <div class="cut-card-dims">
+          <span class="dim-pill"><strong>${toFrac(p.w)}"</strong> W</span>
+          <span class="dim-sep">×</span>
+          <span class="dim-pill"><strong>${toFrac(p.l)}"</strong> L</span>
+        </div>
+        <div class="cut-card-right">
+          <span class="qty-badge">×${p.qty}</span>
+          <span class="mat-chip ${matClass}">${matLabel} ply</span>
+        </div>
+      </div>`;
+    }).join('');
+
+    html += `<div class="cut-group">
+      <div class="cut-group-header">
+        <div class="cut-group-header-icon"></div>
+        <div class="cut-group-header-name">${esc(cab.name)}</div>
+        <div class="cut-group-header-count">${parts.length} parts</div>
+      </div>
+      <div class="cut-card-list">${cards}</div>
+    </div>`;
   }
-  tbody.innerHTML = rows;
+  container.innerHTML = html;
 
   // Material summary
-  if (cabs.length) {
-    const tally = calcMaterialTally(project, s);
-    document.getElementById('summary-grid').innerHTML = `
-      <div class="summary-card wood-card">
-        <div class="s-label">3/4" Plywood</div>
-        <div class="s-value">${tally.ply34.sheets}</div>
-        <div class="s-sub">sheet${tally.ply34.sheets !== 1 ? 's' : ''} · ${tally.ply34.areaSqft.toFixed(1)} sq ft · ${tally.ply34.count} pcs</div>
-      </div>
-      <div class="summary-card accent">
-        <div class="s-label">1/8" Plywood</div>
-        <div class="s-value">${tally.ply18.sheets}</div>
-        <div class="s-sub">sheet${tally.ply18.sheets !== 1 ? 's' : ''} · ${tally.ply18.areaSqft.toFixed(1)} sq ft · ${tally.ply18.count} pcs</div>
-      </div>
-      <div class="summary-card" style="grid-column:1/-1;background:var(--success-soft);border-color:rgba(58,158,111,0.2);">
-        <div class="s-label">Total Sheets Needed (with 10% waste)</div>
-        <div class="s-value" style="color:var(--success)">${tally.ply34.sheets + tally.ply18.sheets}</div>
-        <div class="s-sub">Sheet size: ${s.sheetW}" × ${s.sheetL}" (${(s.sheetW * s.sheetL / 144).toFixed(0)} sq ft each)</div>
-      </div>
-    `;
-  } else {
-    document.getElementById('summary-grid').innerHTML = '';
-  }
+  const tally = calcMaterialTally(project, s);
+  document.getElementById('summary-grid').innerHTML = `
+    <div class="summary-card wood-card">
+      <div class="s-label">3/4" Plywood</div>
+      <div class="s-value">${tally.ply34.sheets}</div>
+      <div class="s-sub">sheet${tally.ply34.sheets !== 1 ? 's' : ''} · ${tally.ply34.areaSqft.toFixed(1)} sq ft · ${tally.ply34.count} pcs</div>
+    </div>
+    <div class="summary-card accent">
+      <div class="s-label">1/8" Plywood</div>
+      <div class="s-value">${tally.ply18.sheets}</div>
+      <div class="s-sub">sheet${tally.ply18.sheets !== 1 ? 's' : ''} · ${tally.ply18.areaSqft.toFixed(1)} sq ft · ${tally.ply18.count} pcs</div>
+    </div>
+    <div class="summary-card" style="grid-column:1/-1;background:var(--success-soft);border-color:rgba(58,158,111,0.2);">
+      <div class="s-label">Total Sheets Needed (with 10% waste)</div>
+      <div class="s-value" style="color:var(--success)">${tally.ply34.sheets + tally.ply18.sheets}</div>
+      <div class="s-sub">Sheet size: ${s.sheetW}" × ${s.sheetL}" (${(s.sheetW * s.sheetL / 144).toFixed(0)} sq ft each)</div>
+    </div>
+  `;
 }
 
 // ── Settings ──
