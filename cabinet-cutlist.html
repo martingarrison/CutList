@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#5b7fa6">
+<title>Cut List</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Syne:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f0f4f8;
+  --surface: #ffffff;
+  --surface-2: #f7f9fb;
+  --border: rgba(60,80,110,0.13);
+  --text: #1e2a38;
+  --text-muted: #6b7c93;
+  --accent: #5b7fa6;
+  --accent-hover: #4a6d92;
+  --accent-text: #ffffff;
+  --accent-soft: #e8f0f8;
+  --success: #3a9e6f;
+  --success-soft: #e6f5ee;
+  --warning: #c07a1e;
+  --danger: #c0392b;
+  --danger-soft: #fceae8;
+  --wood: #c8956a;
+  --wood-soft: #fdf0e6;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --shadow: 0 2px 12px rgba(60,80,110,0.09);
+  --shadow-lg: 0 6px 32px rgba(60,80,110,0.14);
+  --ease-out: cubic-bezier(0.22,1,0.36,1);
+  --ease-spring: cubic-bezier(0.34,1.56,0.64,1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 16px; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  padding-bottom: calc(72px + env(safe-area-inset-bottom));
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── TOP BAR ── */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
+  display: flex; align-items: center; gap: 10px;
+  box-shadow: 0 1px 8px rgba(60,80,110,0.07);
+}
+.topbar-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.05rem; font-weight: 700;
+  color: var(--text); flex: 1;
+  letter-spacing: -0.01em;
+}
+.topbar-title span { color: var(--accent); }
+.topbar-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-muted); padding: 6px; border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  transition: background 120ms, color 120ms;
+  min-width: 36px; min-height: 36px;
+}
+.topbar-btn:hover { background: var(--surface-2); color: var(--accent); }
+.topbar-btn svg { width: 20px; height: 20px; }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  padding-bottom: env(safe-area-inset-bottom);
+  box-shadow: 0 -2px 16px rgba(60,80,110,0.09);
+}
+.nav-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  gap: 3px; padding: 10px 4px; border: none; background: none; cursor: pointer;
+  color: var(--text-muted); font-family: 'DM Sans', sans-serif;
+  font-size: 0.7rem; font-weight: 500; transition: color 150ms;
+  position: relative;
+}
+.nav-btn.active { color: var(--accent); }
+.nav-btn svg { width: 22px; height: 22px; }
+.nav-indicator {
+  position: absolute; top: 6px; left: 50%;
+  transform: translateX(-50%);
+  width: 32px; height: 3px; border-radius: 2px;
+  background: var(--accent);
+  opacity: 0; transition: opacity 150ms;
+}
+.nav-btn.active .nav-indicator { opacity: 1; }
+
+/* ── VIEWS ── */
+.view { display: none; padding: 16px; }
+.view.active { display: block; }
+
+/* ── SECTION HEADER ── */
+.section-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.section-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.8rem; font-weight: 600;
+  color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;
+}
+
+/* ── PROJECT CARDS ── */
+.project-list { display: flex; flex-direction: column; gap: 10px; }
+.project-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform 150ms var(--ease-out), box-shadow 150ms;
+  display: flex; align-items: center; gap: 12px;
+}
+.project-card:active { transform: scale(0.98); }
+.project-card.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft), var(--shadow);
+}
+.project-icon {
+  width: 44px; height: 44px; border-radius: 10px;
+  background: var(--wood-soft); display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.project-icon svg { width: 22px; height: 22px; color: var(--wood); }
+.project-info { flex: 1; min-width: 0; }
+.project-name {
+  font-weight: 600; font-size: 0.95rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.project-meta { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+.project-actions { display: flex; gap: 4px; flex-shrink: 0; }
+.icon-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-muted); padding: 6px; border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  transition: background 120ms, color 120ms;
+  min-width: 32px; min-height: 32px;
+}
+.icon-btn:hover { background: var(--surface-2); }
+.icon-btn.danger:hover { background: var(--danger-soft); color: var(--danger); }
+.icon-btn svg { width: 16px; height: 16px; }
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  text-align: center; padding: 48px 24px;
+  color: var(--text-muted);
+}
+.empty-state svg { width: 56px; height: 56px; color: var(--border); margin-bottom: 16px; }
+.empty-state h3 { font-size: 1rem; color: var(--text); margin-bottom: 6px; }
+.empty-state p { font-size: 0.85rem; line-height: 1.5; }
+
+/* ── CABINET LIST ── */
+.cabinet-list { display: flex; flex-direction: column; gap: 8px; }
+.cabinet-row {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  display: flex; align-items: center; gap: 10px;
+  box-shadow: var(--shadow);
+  animation: slideIn 220ms var(--ease-out) both;
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.cab-num {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--accent-soft); color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem; font-weight: 600; flex-shrink: 0;
+}
+.cab-info { flex: 1; min-width: 0; }
+.cab-name { font-weight: 600; font-size: 0.88rem; }
+.cab-dims { font-size: 0.75rem; color: var(--text-muted); margin-top: 1px; }
+
+/* ── FORMS ── */
+.form-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  margin-bottom: 14px;
+}
+.form-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.95rem; font-weight: 700;
+  margin-bottom: 16px; color: var(--text);
+}
+.form-row { display: flex; gap: 10px; margin-bottom: 12px; }
+.form-group { display: flex; flex-direction: column; gap: 5px; flex: 1; }
+.form-group.full { flex: none; width: 100%; }
+label {
+  font-size: 0.74rem; font-weight: 600;
+  color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;
+}
+input[type="text"], input[type="number"], textarea, select {
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.92rem; color: var(--text);
+  width: 100%;
+  transition: border-color 150ms, box-shadow 150ms;
+  -webkit-appearance: none;
+}
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(91,127,166,0.15);
+}
+input[readonly] { color: var(--text-muted); cursor: default; }
+textarea { resize: vertical; min-height: 64px; }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 11px 18px; border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 600;
+  border: none; cursor: pointer;
+  transition: transform 120ms var(--ease-spring), box-shadow 120ms, background 120ms;
+}
+.btn:active { transform: scale(0.96); }
+.btn svg { width: 16px; height: 16px; }
+.btn-primary {
+  background: var(--accent); color: var(--accent-text);
+  box-shadow: 0 2px 8px rgba(91,127,166,0.3);
+}
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-secondary {
+  background: var(--surface-2); color: var(--text);
+  border: 1.5px solid var(--border);
+}
+.btn-secondary:hover { background: var(--bg); }
+.btn-danger {
+  background: var(--danger-soft); color: var(--danger);
+}
+.btn-ghost {
+  background: transparent; color: var(--accent); padding: 8px 12px;
+}
+.btn-full { width: 100%; }
+.btn-sm { padding: 7px 12px; font-size: 0.8rem; }
+.btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ── CUT LIST TABLE ── */
+.cut-list-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.cut-table {
+  width: 100%; border-collapse: collapse;
+  font-size: 0.8rem; min-width: 480px;
+}
+.cut-table th {
+  background: var(--accent); color: var(--accent-text);
+  padding: 9px 10px; text-align: left;
+  font-size: 0.72rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.cut-table th:first-child { border-radius: var(--radius-sm) 0 0 0; }
+.cut-table th:last-child { border-radius: 0 var(--radius-sm) 0 0; }
+.cut-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.cut-table tr:last-child td { border-bottom: none; }
+.cut-table tr.cab-group-hd td {
+  background: var(--wood-soft);
+  color: var(--wood);
+  font-weight: 600; font-size: 0.8rem;
+  padding: 6px 10px;
+  letter-spacing: 0.02em;
+}
+.cut-table tr:nth-child(even):not(.cab-group-hd) td { background: var(--surface-2); }
+.dim-val { font-weight: 600; font-variant-numeric: tabular-nums; }
+.qty-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--accent-soft); color: var(--accent);
+  border-radius: 4px; padding: 1px 7px;
+  font-weight: 700; font-size: 0.75rem;
+}
+.mat-ply34 { color: var(--wood); font-size: 0.75rem; }
+.mat-ply18 { color: var(--text-muted); font-size: 0.75rem; }
+
+/* ── MATERIAL SUMMARY CARDS ── */
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.summary-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+.summary-card .s-label { font-size: 0.72rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+.summary-card .s-value { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--text); line-height: 1; }
+.summary-card .s-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+.summary-card.accent { background: var(--accent-soft); border-color: rgba(91,127,166,0.2); }
+.summary-card.accent .s-value { color: var(--accent); }
+.summary-card.wood-card { background: var(--wood-soft); border-color: rgba(200,149,106,0.2); }
+.summary-card.wood-card .s-value { color: var(--wood); }
+
+/* ── SETTINGS ── */
+.settings-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+}
+.settings-row:last-child { border-bottom: none; }
+.settings-row-info { flex: 1; }
+.settings-row-label { font-size: 0.88rem; font-weight: 500; }
+.settings-row-desc { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+.settings-row-input { width: 90px; text-align: right; }
+
+/* ── MODAL ── */
+.modal-bg {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(20,30,45,0.45);
+  backdrop-filter: blur(3px);
+  display: flex; align-items: flex-end; justify-content: center;
+  padding: 0;
+  opacity: 0; pointer-events: none;
+  transition: opacity 220ms;
+}
+.modal-bg.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--surface);
+  border-radius: var(--radius) var(--radius) 0 0;
+  padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+  width: 100%; max-width: 540px;
+  max-height: 92dvh; overflow-y: auto;
+  transform: translateY(24px);
+  transition: transform 260ms var(--ease-out);
+}
+.modal-bg.open .modal { transform: translateY(0); }
+.modal-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border); margin: 0 auto 18px; }
+.modal-title {
+  font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700;
+  margin-bottom: 18px; color: var(--text);
+}
+.modal-footer { display: flex; gap: 10px; margin-top: 20px; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: calc(76px + env(safe-area-inset-bottom)); left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--text); color: white;
+  padding: 10px 18px; border-radius: 30px;
+  font-size: 0.84rem; font-weight: 500;
+  opacity: 0; pointer-events: none; z-index: 300;
+  white-space: nowrap;
+  transition: opacity 200ms, transform 200ms var(--ease-spring);
+  display: flex; align-items: center; gap: 8px;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.success { background: var(--success); }
+.toast svg { width: 16px; height: 16px; }
+
+/* ── CHIPS ── */
+.chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.chip {
+  padding: 5px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 600;
+  border: 1.5px solid var(--border); cursor: pointer; transition: background 120ms, border-color 120ms, color 120ms;
+  background: var(--surface); color: var(--text-muted);
+}
+.chip.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+
+/* ── SCROLL ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ── TAGS ── */
+.tag {
+  display: inline-block; font-size: 0.7rem; font-weight: 600;
+  padding: 2px 8px; border-radius: 20px;
+  background: var(--success-soft); color: var(--success);
+}
+
+/* NOTES NOTE in table */
+.note-cell { font-size: 0.72rem; color: var(--text-muted); }
+
+/* Fraction display helper */
+.frac { font-variant-numeric: tabular-nums; }
+
+/* ── RESPONSIVE ── */
+@media (min-width: 480px) {
+  .view { padding: 20px; max-width: 600px; margin: 0 auto; }
+  .topbar { padding: 14px 24px; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <div class="topbar-title">Cut<span>List</span></div>
+  <button class="topbar-btn" id="btn-import" title="Import JSON">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+  </button>
+  <button class="topbar-btn" id="btn-export" title="Export JSON">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+  </button>
+</header>
+
+<!-- HIDDEN FILE INPUT -->
+<input type="file" id="file-input" accept=".json" style="display:none">
+
+<!-- VIEWS -->
+
+<!-- ── PROJECTS VIEW ── -->
+<div class="view active" id="view-projects">
+  <div class="section-hd">
+    <span class="section-title">Projects</span>
+    <button class="btn btn-primary btn-sm" id="btn-new-project">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New Project
+    </button>
+  </div>
+  <div id="project-list-el" class="project-list"></div>
+</div>
+
+<!-- ── CABINETS VIEW ── -->
+<div class="view" id="view-cabinets">
+  <div id="project-breadcrumb" style="margin-bottom:12px;">
+    <button class="btn btn-ghost" style="padding:4px 0;font-size:0.82rem;margin-bottom:8px;" id="btn-back-projects">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="15 18 9 12 15 6"/></svg>
+      Projects
+    </button>
+    <div class="section-hd">
+      <span class="section-title" id="project-name-label">Cabinets</span>
+      <button class="btn btn-primary btn-sm" id="btn-add-cabinet">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Cabinet
+      </button>
+    </div>
+  </div>
+  <div id="cabinet-list-el" class="cabinet-list"></div>
+</div>
+
+<!-- ── CUT LIST VIEW ── -->
+<div class="view" id="view-cutlist">
+  <div style="margin-bottom:12px;">
+    <button class="btn btn-ghost" style="padding:4px 0;font-size:0.82rem;margin-bottom:8px;" id="btn-back-cabinets">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="15 18 9 12 15 6"/></svg>
+      Cabinets
+    </button>
+    <div class="section-hd">
+      <span class="section-title" id="cutlist-project-label">Cut List</span>
+      <button class="btn btn-secondary btn-sm" id="btn-copy-cutlist">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copy
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter chips -->
+  <div class="chips" id="cutlist-chips"></div>
+
+  <!-- Table -->
+  <div class="form-card" style="padding:0;overflow:hidden;">
+    <div class="cut-list-wrap">
+      <table class="cut-table" id="cut-table-el">
+        <thead>
+          <tr>
+            <th>#</th><th>Cabinet</th><th>Part</th>
+            <th>W (in)</th><th>L (in)</th><th>Qty</th>
+            <th>Material</th>
+          </tr>
+        </thead>
+        <tbody id="cut-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Material Summary -->
+  <div class="section-hd" style="margin-top:20px;">
+    <span class="section-title">Material Estimate</span>
+  </div>
+  <div class="summary-grid" id="summary-grid"></div>
+</div>
+
+<!-- ── SETTINGS VIEW ── -->
+<div class="view" id="view-settings">
+  <div class="section-hd"><span class="section-title">Settings</span></div>
+  <div class="form-card">
+    <div class="form-title">Material Thickness</div>
+    <div class="settings-row">
+      <div class="settings-row-info">
+        <div class="settings-row-label">Carcase Plywood</div>
+        <div class="settings-row-desc">Sides, top, bottom, shelves (in)</div>
+      </div>
+      <input type="number" class="settings-row-input" id="s-carcase" step="0.0625" min="0.1" value="0.75">
+    </div>
+    <div class="settings-row">
+      <div class="settings-row-info">
+        <div class="settings-row-label">Back Panel</div>
+        <div class="settings-row-desc">1/8 in ply back (in)</div>
+      </div>
+      <input type="number" class="settings-row-input" id="s-back" step="0.0625" min="0.1" value="0.125">
+    </div>
+    <div class="settings-row">
+      <div class="settings-row-info">
+        <div class="settings-row-label">Back Groove Depth</div>
+        <div class="settings-row-desc">Groove routed in sides/top/bottom (in)</div>
+      </div>
+      <input type="number" class="settings-row-input" id="s-groove-depth" step="0.0625" min="0" value="0.375">
+    </div>
+    <div class="settings-row">
+      <div class="settings-row-info">
+        <div class="settings-row-label">Back Groove Offset</div>
+        <div class="settings-row-desc">Distance from back edge to groove (in)</div>
+      </div>
+      <input type="number" class="settings-row-input" id="s-groove-offset" step="0.0625" min="0" value="0.375">
+    </div>
+    <div class="settings-row">
+      <div class="settings-row-info">
+        <div class="settings-row-label">Dado Depth</div>
+        <div class="settings-row-desc">Set 0 for shelf-pin holes (in)</div>
+      </div>
+      <input type="number" class="settings-row-input" id="s-dado" step="0.0625" min="0" value="0">
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">Kerf & Tolerances</div>
+    <div class="settings-row">
+      <div class="settings-row-info">
+        <div class="settings-row-label">Saw Kerf</div>
+        <div class="settings-row-desc">Blade width, subtracted between rips (in)</div>
+      </div>
+      <input type="number" class="settings-row-input" id="s-kerf" step="0.0625" min="0" value="0.125">
+    </div>
+    <div class="settings-row">
+      <div class="settings-row-info">
+        <div class="settings-row-label">Cut Tolerance</div>
+        <div class="settings-row-desc">Added to each dimension for cleanup (in)</div>
+      </div>
+      <input type="number" class="settings-row-input" id="s-tolerance" step="0.03125" min="0" value="0.03125">
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">Sheet Stock</div>
+    <div class="settings-row">
+      <div class="settings-row-info">
+        <div class="settings-row-label">Sheet Width</div>
+        <div class="settings-row-desc">Nominal 48 in (in)</div>
+      </div>
+      <input type="number" class="settings-row-input" id="s-sheet-w" step="1" min="1" value="48">
+    </div>
+    <div class="settings-row">
+      <div class="settings-row-info">
+        <div class="settings-row-label">Sheet Length</div>
+        <div class="settings-row-desc">Nominal 96 in (in)</div>
+      </div>
+      <input type="number" class="settings-row-input" id="s-sheet-l" step="1" min="1" value="96">
+    </div>
+  </div>
+
+  <div class="btn-group">
+    <button class="btn btn-primary" id="btn-save-settings">Save Settings</button>
+    <button class="btn btn-secondary" id="btn-reset-settings">Reset Defaults</button>
+  </div>
+</div>
+
+<!-- ── BOTTOM NAV ── -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" data-view="projects">
+    <div class="nav-indicator"></div>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Projects
+  </button>
+  <button class="nav-btn" data-view="cabinets" id="nav-cabinets">
+    <div class="nav-indicator"></div>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+    Cabinets
+  </button>
+  <button class="nav-btn" data-view="cutlist" id="nav-cutlist">
+    <div class="nav-indicator"></div>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+    Cut List
+  </button>
+  <button class="nav-btn" data-view="settings">
+    <div class="nav-indicator"></div>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Settings
+  </button>
+</nav>
+
+<!-- ── MODALS ── -->
+
+<!-- New/Edit Project Modal -->
+<div class="modal-bg" id="modal-project">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-project-title">New Project</div>
+    <div class="form-group" style="margin-bottom:14px;">
+      <label>Project Name</label>
+      <input type="text" id="input-project-name" placeholder="e.g. Kitchen Remodel 2025">
+    </div>
+    <div class="form-group">
+      <label>Notes (optional)</label>
+      <textarea id="input-project-notes" placeholder="Any notes about this project…"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" id="btn-save-project" style="flex:1;">Save Project</button>
+      <button class="btn btn-secondary" id="btn-cancel-project">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- New/Edit Cabinet Modal -->
+<div class="modal-bg" id="modal-cabinet">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-cabinet-title">Add Cabinet</div>
+    <div class="form-group" style="margin-bottom:12px;">
+      <label>Cabinet Name</label>
+      <input type="text" id="input-cab-name" placeholder="e.g. Upper Left, Base Sink…">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Width (in)</label>
+        <input type="number" id="input-cab-w" placeholder="36" step="0.0625" min="0.1">
+      </div>
+      <div class="form-group">
+        <label>Height (in)</label>
+        <input type="number" id="input-cab-h" placeholder="34.5" step="0.0625" min="0.1">
+      </div>
+      <div class="form-group">
+        <label>Depth (in)</label>
+        <input type="number" id="input-cab-d" placeholder="24" step="0.0625" min="0.1">
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:12px;">
+      <label># of Shelves</label>
+      <input type="number" id="input-cab-shelves" placeholder="0" step="1" min="0" value="0">
+    </div>
+    <div class="form-group">
+      <label>Notes (optional)</label>
+      <input type="text" id="input-cab-notes" placeholder="e.g. Single door, drawer bank…">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" id="btn-save-cabinet" style="flex:1;">Save Cabinet</button>
+      <button class="btn btn-secondary" id="btn-cancel-cabinet">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Delete Modal -->
+<div class="modal-bg" id="modal-confirm">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-confirm-title">Delete?</div>
+    <p id="modal-confirm-msg" style="color:var(--text-muted);font-size:0.9rem;line-height:1.5;margin-bottom:8px;"></p>
+    <div class="modal-footer">
+      <button class="btn btn-danger" id="btn-confirm-ok" style="flex:1;">Delete</button>
+      <button class="btn btn-secondary" id="btn-confirm-cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toast-msg">Copied!</span>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════
+const DEFAULT_SETTINGS = {
+  carcase: 0.75,
+  back: 0.125,
+  grooveDepth: 0.375,
+  grooveOffset: 0.375,
+  dado: 0,
+  kerf: 0.125,
+  tolerance: 0.03125,
+  sheetW: 48,
+  sheetL: 96
+};
+
+let state = {
+  projects: [],      // [{id, name, notes, cabinets:[{id,name,w,h,d,shelves,notes}]}]
+  activeProjectId: null,
+  settings: { ...DEFAULT_SETTINGS }
+};
+
+// ── Persistence ──
+function saveState() {
+  localStorage.setItem('cutlist-v1', JSON.stringify(state));
+}
+function loadState() {
+  try {
+    const raw = localStorage.getItem('cutlist-v1');
+    if (raw) {
+      const saved = JSON.parse(raw);
+      state = { ...state, ...saved };
+      state.settings = { ...DEFAULT_SETTINGS, ...(saved.settings || {}) };
+    }
+  } catch(e) {}
+}
+
+// ── ID generator ──
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+// ── Fraction display ──
+function toFrac(val) {
+  if (val === null || val === '' || isNaN(val)) return '—';
+  const n = Math.round(val * 32) / 32;
+  const whole = Math.floor(n);
+  const frac = n - whole;
+  const fracs = {0:'',0.03125:'1/32',0.0625:'1/16',0.09375:'3/32',0.125:'1/8',
+    0.15625:'5/32',0.1875:'3/16',0.21875:'7/32',0.25:'1/4',0.28125:'9/32',
+    0.3125:'5/16',0.34375:'11/32',0.375:'3/8',0.40625:'13/32',0.4375:'7/16',
+    0.46875:'15/32',0.5:'1/2',0.53125:'17/32',0.5625:'9/16',0.59375:'19/32',
+    0.625:'5/8',0.65625:'21/32',0.6875:'11/16',0.71875:'23/32',0.75:'3/4',
+    0.78125:'25/32',0.8125:'13/16',0.84375:'27/32',0.875:'7/8',0.90625:'29/32',
+    0.9375:'15/16',0.96875:'31/32'};
+  const fstr = fracs[Math.round(frac*32)/32] || '';
+  if (!fstr) return String(whole || '0');
+  if (!whole) return fstr;
+  return `${whole} ${fstr}`;
+}
+
+// ══════════════════════════════════════════
+//  CUT LIST CALCULATION
+// ══════════════════════════════════════════
+function calcCuts(cab, s) {
+  const { w, h, d, shelves } = cab;
+  const parts = [];
+
+  // Side Panel (L & R) — width=depth, length=height
+  parts.push({
+    part: 'Side Panel (L & R)',
+    w: d,
+    l: h,
+    qty: 2,
+    mat: '3/4 in Plywood',
+    thick: s.carcase,
+    note: 'Full depth & height; groove routed 3/8 in from back edge'
+  });
+
+  // Top Panel — width = overall width - 2 × carcase thickness, length = depth
+  parts.push({
+    part: 'Top Panel',
+    w: w - 2 * s.carcase,
+    l: d,
+    qty: 1,
+    mat: '3/4 in Plywood',
+    thick: s.carcase,
+    note: 'Fits between sides; groove routed 3/8 in from back edge'
+  });
+
+  // Bottom Panel
+  parts.push({
+    part: 'Bottom Panel',
+    w: w - 2 * s.carcase,
+    l: d,
+    qty: 1,
+    mat: '3/4 in Plywood',
+    thick: s.carcase,
+    note: 'Fits between sides; groove routed 3/8 in from back edge'
+  });
+
+  // Back Panel — fits into groove
+  // Formula from spreadsheet: w_back = width - 2*(grooveOffset - grooveDepth)
+  //                           l_back = height - 2*(grooveOffset - grooveDepth)
+  const backAdj = 2 * (s.grooveOffset - s.grooveDepth);
+  parts.push({
+    part: 'Back Panel',
+    w: w - backAdj,
+    l: h - backAdj,
+    qty: 1,
+    mat: '1/8 in Plywood',
+    thick: s.back,
+    note: `Fits into ${toFrac(s.grooveDepth)} in groove routed ${toFrac(s.grooveOffset)} in from back edge`
+  });
+
+  // Shelves (if any)
+  if (shelves > 0) {
+    // w = overall width - 2*carcase - 1/16 clearance, l = depth - grooveOffset - 1 in front reveal
+    parts.push({
+      part: 'Adjustable Shelf',
+      w: w - 2 * s.carcase - (1/16),
+      l: d - s.grooveOffset - 1,
+      qty: shelves,
+      mat: '3/4 in Plywood',
+      thick: s.carcase,
+      note: '1/16 in side clearance; 1 in front reveal (Euro frameless)'
+    });
+  }
+
+  return parts;
+}
+
+// ── Material tally ──
+function calcMaterialTally(project, s) {
+  const sheetArea = s.sheetW * s.sheetL; // sq in
+  let area34 = 0, count34 = 0;
+  let area18 = 0, count18 = 0;
+
+  for (const cab of project.cabinets) {
+    const parts = calcCuts(cab, s);
+    for (const p of parts) {
+      const a = p.w * p.l * p.qty; // sq in
+      if (p.mat === '3/4 in Plywood') { area34 += a; count34 += p.qty; }
+      else { area18 += a; count18 += p.qty; }
+    }
+  }
+
+  const area34sqft = area34 / 144;
+  const area18sqft = area18 / 144;
+  const sheetAreaSqft = sheetArea / 144;
+
+  return {
+    ply34: {
+      count: count34, areaSqft: area34sqft,
+      sheets: Math.ceil((area34sqft * 1.1) / sheetAreaSqft)
+    },
+    ply18: {
+      count: count18, areaSqft: area18sqft,
+      sheets: Math.ceil((area18sqft * 1.1) / sheetAreaSqft)
+    }
+  };
+}
+
+// ══════════════════════════════════════════
+//  RENDER FUNCTIONS
+// ══════════════════════════════════════════
+
+// ── Projects ──
+function renderProjects() {
+  const el = document.getElementById('project-list-el');
+  if (!state.projects.length) {
+    el.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+      <h3>No projects yet</h3>
+      <p>Tap "New Project" to get started tracking your cabinet cut lists.</p>
+    </div>`;
+    return;
+  }
+  el.innerHTML = state.projects.map(p => {
+    const cabCount = (p.cabinets || []).length;
+    return `<div class="project-card" data-id="${p.id}">
+      <div class="project-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="17"/><line x1="9.5" y1="14.5" x2="14.5" y2="14.5"/></svg>
+      </div>
+      <div class="project-info">
+        <div class="project-name">${esc(p.name)}</div>
+        <div class="project-meta">${cabCount} cabinet${cabCount !== 1 ? 's' : ''}${p.notes ? ' · ' + esc(p.notes.substring(0,40)) : ''}</div>
+      </div>
+      <div class="project-actions">
+        <button class="icon-btn" data-action="edit-project" data-id="${p.id}" title="Edit">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+        <button class="icon-btn danger" data-action="delete-project" data-id="${p.id}" title="Delete">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Event delegation
+  el.querySelectorAll('.project-card').forEach(card => {
+    card.addEventListener('click', e => {
+      if (e.target.closest('[data-action]')) return;
+      selectProject(card.dataset.id);
+    });
+  });
+  el.querySelectorAll('[data-action="edit-project"]').forEach(btn => {
+    btn.addEventListener('click', e => { e.stopPropagation(); openEditProject(btn.dataset.id); });
+  });
+  el.querySelectorAll('[data-action="delete-project"]').forEach(btn => {
+    btn.addEventListener('click', e => { e.stopPropagation(); confirmDeleteProject(btn.dataset.id); });
+  });
+}
+
+// ── Select project → go to cabinets ──
+function selectProject(id) {
+  state.activeProjectId = id;
+  saveState();
+  renderCabinets();
+  switchView('cabinets');
+}
+
+// ── Cabinets ──
+function renderCabinets() {
+  const project = state.projects.find(p => p.id === state.activeProjectId);
+  if (!project) return;
+  document.getElementById('project-name-label').textContent = project.name;
+  const el = document.getElementById('cabinet-list-el');
+  const cabs = project.cabinets || [];
+  if (!cabs.length) {
+    el.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      <h3>No cabinets yet</h3>
+      <p>Add cabinets to generate a cut list.</p>
+    </div>`;
+    return;
+  }
+  el.innerHTML = cabs.map((c, i) => `
+    <div class="cabinet-row" style="--i:${i}">
+      <div class="cab-num">${i+1}</div>
+      <div class="cab-info">
+        <div class="cab-name">${esc(c.name)}</div>
+        <div class="cab-dims">${toFrac(c.w)}" W × ${toFrac(c.h)}" H × ${toFrac(c.d)}" D${c.shelves > 0 ? ` · ${c.shelves} shelf` : ''}${c.notes ? ' · ' + esc(c.notes) : ''}</div>
+      </div>
+      <div class="project-actions">
+        <button class="icon-btn" data-action="edit-cab" data-cid="${c.id}" title="Edit">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+        <button class="icon-btn danger" data-action="delete-cab" data-cid="${c.id}" title="Delete">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        </button>
+      </div>
+    </div>
+  `).join('');
+
+  el.querySelectorAll('[data-action="edit-cab"]').forEach(btn => {
+    btn.addEventListener('click', () => openEditCabinet(btn.dataset.cid));
+  });
+  el.querySelectorAll('[data-action="delete-cab"]').forEach(btn => {
+    btn.addEventListener('click', () => confirmDeleteCabinet(btn.dataset.cid));
+  });
+}
+
+// ── Cut List ──
+let activeFilter = 'all';
+function renderCutList() {
+  const project = state.projects.find(p => p.id === state.activeProjectId);
+  if (!project) return;
+  document.getElementById('cutlist-project-label').textContent = project.name;
+  const s = state.settings;
+  const cabs = project.cabinets || [];
+
+  // Filter chips
+  const chipsEl = document.getElementById('cutlist-chips');
+  const chipData = [{ id: 'all', label: 'All' }, ...cabs.map(c => ({ id: c.id, label: c.name }))];
+  chipsEl.innerHTML = chipData.map(ch => `<span class="chip ${activeFilter === ch.id ? 'active' : ''}" data-filter="${ch.id}">${esc(ch.label)}</span>`).join('');
+  chipsEl.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      activeFilter = chip.dataset.filter;
+      renderCutList();
+    });
+  });
+
+  // Build table
+  const tbody = document.getElementById('cut-table-body');
+  let rows = '';
+  let rowNum = 1;
+  const filtered = activeFilter === 'all' ? cabs : cabs.filter(c => c.id === activeFilter);
+
+  for (const cab of filtered) {
+    rows += `<tr class="cab-group-hd"><td colspan="7">${esc(cab.name)}</td></tr>`;
+    const parts = calcCuts(cab, s);
+    for (const p of parts) {
+      const matClass = p.mat === '3/4 in Plywood' ? 'mat-ply34' : 'mat-ply18';
+      rows += `<tr>
+        <td>${rowNum++}</td>
+        <td style="font-size:0.78rem;color:var(--text-muted)">${esc(cab.name)}</td>
+        <td style="font-weight:500">${p.part}</td>
+        <td class="dim-val frac">${toFrac(p.w)}"</td>
+        <td class="dim-val frac">${toFrac(p.l)}"</td>
+        <td><span class="qty-badge">${p.qty}</span></td>
+        <td class="${matClass}">${p.mat}</td>
+      </tr>`;
+    }
+  }
+
+  if (!filtered.length || rows === '') {
+    rows = `<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px;">No cabinets in this project yet.</td></tr>`;
+  }
+  tbody.innerHTML = rows;
+
+  // Material summary
+  if (cabs.length) {
+    const tally = calcMaterialTally(project, s);
+    document.getElementById('summary-grid').innerHTML = `
+      <div class="summary-card wood-card">
+        <div class="s-label">3/4" Plywood</div>
+        <div class="s-value">${tally.ply34.sheets}</div>
+        <div class="s-sub">sheet${tally.ply34.sheets !== 1 ? 's' : ''} · ${tally.ply34.areaSqft.toFixed(1)} sq ft · ${tally.ply34.count} pcs</div>
+      </div>
+      <div class="summary-card accent">
+        <div class="s-label">1/8" Plywood</div>
+        <div class="s-value">${tally.ply18.sheets}</div>
+        <div class="s-sub">sheet${tally.ply18.sheets !== 1 ? 's' : ''} · ${tally.ply18.areaSqft.toFixed(1)} sq ft · ${tally.ply18.count} pcs</div>
+      </div>
+      <div class="summary-card" style="grid-column:1/-1;background:var(--success-soft);border-color:rgba(58,158,111,0.2);">
+        <div class="s-label">Total Sheets Needed (with 10% waste)</div>
+        <div class="s-value" style="color:var(--success)">${tally.ply34.sheets + tally.ply18.sheets}</div>
+        <div class="s-sub">Sheet size: ${s.sheetW}" × ${s.sheetL}" (${(s.sheetW * s.sheetL / 144).toFixed(0)} sq ft each)</div>
+      </div>
+    `;
+  } else {
+    document.getElementById('summary-grid').innerHTML = '';
+  }
+}
+
+// ── Settings ──
+function loadSettingsUI() {
+  const s = state.settings;
+  document.getElementById('s-carcase').value = s.carcase;
+  document.getElementById('s-back').value = s.back;
+  document.getElementById('s-groove-depth').value = s.grooveDepth;
+  document.getElementById('s-groove-offset').value = s.grooveOffset;
+  document.getElementById('s-dado').value = s.dado;
+  document.getElementById('s-kerf').value = s.kerf;
+  document.getElementById('s-tolerance').value = s.tolerance;
+  document.getElementById('s-sheet-w').value = s.sheetW;
+  document.getElementById('s-sheet-l').value = s.sheetL;
+}
+
+// ══════════════════════════════════════════
+//  VIEW SWITCHING
+// ══════════════════════════════════════════
+function switchView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.view === name);
+  });
+  if (name === 'cutlist') renderCutList();
+  if (name === 'cabinets') renderCabinets();
+  if (name === 'settings') loadSettingsUI();
+  if (name === 'projects') renderProjects();
+}
+
+// ══════════════════════════════════════════
+//  MODALS
+// ══════════════════════════════════════════
+let editingProjectId = null;
+let editingCabinetId = null;
+let confirmCallback = null;
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function openNewProject() {
+  editingProjectId = null;
+  document.getElementById('modal-project-title').textContent = 'New Project';
+  document.getElementById('input-project-name').value = '';
+  document.getElementById('input-project-notes').value = '';
+  openModal('modal-project');
+  setTimeout(() => document.getElementById('input-project-name').focus(), 300);
+}
+function openEditProject(id) {
+  editingProjectId = id;
+  const p = state.projects.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('modal-project-title').textContent = 'Edit Project';
+  document.getElementById('input-project-name').value = p.name;
+  document.getElementById('input-project-notes').value = p.notes || '';
+  openModal('modal-project');
+}
+function saveProject() {
+  const name = document.getElementById('input-project-name').value.trim();
+  if (!name) { document.getElementById('input-project-name').focus(); return; }
+  const notes = document.getElementById('input-project-notes').value.trim();
+  if (editingProjectId) {
+    const p = state.projects.find(x => x.id === editingProjectId);
+    if (p) { p.name = name; p.notes = notes; }
+  } else {
+    state.projects.push({ id: uid(), name, notes, cabinets: [] });
+  }
+  saveState(); closeModal('modal-project'); renderProjects();
+  showToast(editingProjectId ? 'Project updated' : 'Project created');
+}
+
+function confirmDeleteProject(id) {
+  const p = state.projects.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('modal-confirm-title').textContent = 'Delete Project?';
+  document.getElementById('modal-confirm-msg').textContent = `"${p.name}" and all its cabinets will be permanently deleted.`;
+  confirmCallback = () => {
+    state.projects = state.projects.filter(x => x.id !== id);
+    if (state.activeProjectId === id) state.activeProjectId = null;
+    saveState(); closeModal('modal-confirm'); renderProjects();
+    showToast('Project deleted');
+  };
+  openModal('modal-confirm');
+}
+
+function openAddCabinet() {
+  editingCabinetId = null;
+  document.getElementById('modal-cabinet-title').textContent = 'Add Cabinet';
+  document.getElementById('input-cab-name').value = '';
+  document.getElementById('input-cab-w').value = '';
+  document.getElementById('input-cab-h').value = '';
+  document.getElementById('input-cab-d').value = '';
+  document.getElementById('input-cab-shelves').value = '0';
+  document.getElementById('input-cab-notes').value = '';
+  openModal('modal-cabinet');
+  setTimeout(() => document.getElementById('input-cab-name').focus(), 300);
+}
+function openEditCabinet(cid) {
+  editingCabinetId = cid;
+  const project = state.projects.find(p => p.id === state.activeProjectId);
+  const cab = project && project.cabinets.find(c => c.id === cid);
+  if (!cab) return;
+  document.getElementById('modal-cabinet-title').textContent = 'Edit Cabinet';
+  document.getElementById('input-cab-name').value = cab.name;
+  document.getElementById('input-cab-w').value = cab.w;
+  document.getElementById('input-cab-h').value = cab.h;
+  document.getElementById('input-cab-d').value = cab.d;
+  document.getElementById('input-cab-shelves').value = cab.shelves;
+  document.getElementById('input-cab-notes').value = cab.notes || '';
+  openModal('modal-cabinet');
+}
+function saveCabinet() {
+  const name = document.getElementById('input-cab-name').value.trim();
+  const w = parseFloat(document.getElementById('input-cab-w').value);
+  const h = parseFloat(document.getElementById('input-cab-h').value);
+  const d = parseFloat(document.getElementById('input-cab-d').value);
+  const shelves = parseInt(document.getElementById('input-cab-shelves').value) || 0;
+  const notes = document.getElementById('input-cab-notes').value.trim();
+
+  if (!name || isNaN(w) || isNaN(h) || isNaN(d)) {
+    showToast('Please fill in name and dimensions');
+    return;
+  }
+  const project = state.projects.find(p => p.id === state.activeProjectId);
+  if (!project) return;
+
+  if (editingCabinetId) {
+    const cab = project.cabinets.find(c => c.id === editingCabinetId);
+    if (cab) Object.assign(cab, { name, w, h, d, shelves, notes });
+  } else {
+    project.cabinets.push({ id: uid(), name, w, h, d, shelves, notes });
+  }
+  saveState(); closeModal('modal-cabinet'); renderCabinets();
+  showToast(editingCabinetId ? 'Cabinet updated' : 'Cabinet added');
+}
+
+function confirmDeleteCabinet(cid) {
+  const project = state.projects.find(p => p.id === state.activeProjectId);
+  const cab = project && project.cabinets.find(c => c.id === cid);
+  if (!cab) return;
+  document.getElementById('modal-confirm-title').textContent = 'Delete Cabinet?';
+  document.getElementById('modal-confirm-msg').textContent = `"${cab.name}" and its cut list will be removed from this project.`;
+  confirmCallback = () => {
+    project.cabinets = project.cabinets.filter(c => c.id !== cid);
+    saveState(); closeModal('modal-confirm'); renderCabinets();
+    showToast('Cabinet deleted');
+  };
+  openModal('modal-confirm');
+}
+
+// ══════════════════════════════════════════
+//  COPY CUT LIST
+// ══════════════════════════════════════════
+function copyCutList() {
+  const project = state.projects.find(p => p.id === state.activeProjectId);
+  if (!project || !project.cabinets.length) { showToast('No cut list to copy'); return; }
+  const s = state.settings;
+  const cabs = activeFilter === 'all' ? project.cabinets : project.cabinets.filter(c => c.id === activeFilter);
+
+  const cols = ['#', 'Cabinet', 'Part', 'Width (in)', 'Length (in)', 'Qty', 'Material'];
+  const colW = [4, 22, 24, 12, 13, 5, 16];
+
+  function pad(str, len) { return String(str).padEnd(len).substring(0, len); }
+  function padL(str, len) { return String(str).padStart(len).substring(0, len); }
+
+  let lines = [];
+  lines.push(`CUT LIST — ${project.name}`);
+  lines.push('='.repeat(100));
+  lines.push(cols.map((c, i) => pad(c, colW[i])).join(' | '));
+  lines.push('-'.repeat(100));
+
+  let rowNum = 1;
+  for (const cab of cabs) {
+    lines.push('');
+    lines.push(`  ▸ ${cab.name.toUpperCase()}`);
+    const parts = calcCuts(cab, s);
+    for (const p of parts) {
+      lines.push([
+        pad(rowNum++, colW[0]),
+        pad(cab.name, colW[1]),
+        pad(p.part, colW[2]),
+        pad(toFrac(p.w) + '"', colW[3]),
+        pad(toFrac(p.l) + '"', colW[4]),
+        pad(p.qty, colW[5]),
+        pad(p.mat, colW[6])
+      ].join(' | '));
+    }
+  }
+
+  // Material tally
+  lines.push('');
+  lines.push('='.repeat(100));
+  lines.push('MATERIAL ESTIMATE (includes 10% waste)');
+  lines.push('-'.repeat(60));
+  const tally = calcMaterialTally(project, s);
+  lines.push(`3/4 in Plywood:  ${tally.ply34.sheets} sheet(s) — ${tally.ply34.areaSqft.toFixed(1)} sq ft — ${tally.ply34.count} pieces`);
+  lines.push(`1/8 in Plywood:  ${tally.ply18.sheets} sheet(s) — ${tally.ply18.areaSqft.toFixed(1)} sq ft — ${tally.ply18.count} pieces`);
+  lines.push(`Total sheets:    ${tally.ply34.sheets + tally.ply18.sheets}`);
+  lines.push('='.repeat(100));
+
+  navigator.clipboard.writeText(lines.join('\n'))
+    .then(() => showToast('Cut list copied to clipboard', true))
+    .catch(() => showToast('Copy failed — try again'));
+}
+
+// ══════════════════════════════════════════
+//  EXPORT / IMPORT
+// ══════════════════════════════════════════
+function exportJSON() {
+  const data = JSON.stringify({ projects: state.projects, settings: state.settings }, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `cutlist-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Backup exported');
+}
+
+function importJSON(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.projects) {
+        state.projects = data.projects;
+        if (data.settings) state.settings = { ...DEFAULT_SETTINGS, ...data.settings };
+        saveState();
+        renderProjects();
+        showToast('Data imported successfully', true);
+      }
+    } catch { showToast('Invalid file — import failed'); }
+  };
+  reader.readAsText(file);
+}
+
+// ══════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════
+let toastTimer;
+function showToast(msg, success = false) {
+  const el = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  el.classList.toggle('success', success);
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2400);
+}
+
+// ══════════════════════════════════════════
+//  ESCAPE
+// ══════════════════════════════════════════
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ══════════════════════════════════════════
+//  WIRE UP EVENTS
+// ══════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  renderProjects();
+
+  // Nav
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.view === 'cabinets' && !state.activeProjectId) {
+        showToast('Select a project first'); return;
+      }
+      if (btn.dataset.view === 'cutlist' && !state.activeProjectId) {
+        showToast('Select a project first'); return;
+      }
+      switchView(btn.dataset.view);
+    });
+  });
+
+  // Top bar
+  document.getElementById('btn-export').addEventListener('click', exportJSON);
+  document.getElementById('btn-import').addEventListener('click', () => document.getElementById('file-input').click());
+  document.getElementById('file-input').addEventListener('change', e => {
+    if (e.target.files[0]) importJSON(e.target.files[0]);
+    e.target.value = '';
+  });
+
+  // Project modal
+  document.getElementById('btn-new-project').addEventListener('click', openNewProject);
+  document.getElementById('btn-save-project').addEventListener('click', saveProject);
+  document.getElementById('btn-cancel-project').addEventListener('click', () => closeModal('modal-project'));
+
+  // Cabinet modal
+  document.getElementById('btn-add-cabinet').addEventListener('click', openAddCabinet);
+  document.getElementById('btn-save-cabinet').addEventListener('click', saveCabinet);
+  document.getElementById('btn-cancel-cabinet').addEventListener('click', () => closeModal('modal-cabinet'));
+
+  // Back navigation
+  document.getElementById('btn-back-projects').addEventListener('click', () => switchView('projects'));
+  document.getElementById('btn-back-cabinets').addEventListener('click', () => switchView('cabinets'));
+
+  // Confirm modal
+  document.getElementById('btn-confirm-ok').addEventListener('click', () => confirmCallback && confirmCallback());
+  document.getElementById('btn-confirm-cancel').addEventListener('click', () => closeModal('modal-confirm'));
+
+  // Cut list copy
+  document.getElementById('btn-copy-cutlist').addEventListener('click', copyCutList);
+
+  // Settings
+  document.getElementById('btn-save-settings').addEventListener('click', () => {
+    state.settings = {
+      carcase: parseFloat(document.getElementById('s-carcase').value) || DEFAULT_SETTINGS.carcase,
+      back: parseFloat(document.getElementById('s-back').value) || DEFAULT_SETTINGS.back,
+      grooveDepth: parseFloat(document.getElementById('s-groove-depth').value),
+      grooveOffset: parseFloat(document.getElementById('s-groove-offset').value),
+      dado: parseFloat(document.getElementById('s-dado').value) || 0,
+      kerf: parseFloat(document.getElementById('s-kerf').value) || DEFAULT_SETTINGS.kerf,
+      tolerance: parseFloat(document.getElementById('s-tolerance').value),
+      sheetW: parseFloat(document.getElementById('s-sheet-w').value) || DEFAULT_SETTINGS.sheetW,
+      sheetL: parseFloat(document.getElementById('s-sheet-l').value) || DEFAULT_SETTINGS.sheetL,
+    };
+    saveState();
+    showToast('Settings saved', true);
+  });
+  document.getElementById('btn-reset-settings').addEventListener('click', () => {
+    state.settings = { ...DEFAULT_SETTINGS };
+    saveState(); loadSettingsUI();
+    showToast('Settings reset to defaults');
+  });
+
+  // Close modals on background click
+  ['modal-project','modal-cabinet','modal-confirm'].forEach(id => {
+    document.getElementById(id).addEventListener('click', e => {
+      if (e.target === document.getElementById(id)) closeModal(id);
+    });
+  });
+
+  // Enter key in project name
+  document.getElementById('input-project-name').addEventListener('keydown', e => {
+    if (e.key === 'Enter') saveProject();
+  });
+  document.getElementById('input-cab-notes').addEventListener('keydown', e => {
+    if (e.key === 'Enter') saveCabinet();
+  });
+});
+</script>
+</body>
+</html>
