@@ -233,6 +233,51 @@ input:focus, textarea:focus, select:focus {
 input[readonly] { color: var(--text-muted); cursor: default; }
 textarea { resize: vertical; min-height: 64px; }
 
+/* ── FRACTION STEPPER INPUT ── */
+.frac-input-wrap {
+  display: flex; align-items: stretch;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  overflow: hidden;
+  transition: border-color 150ms, box-shadow 150ms;
+}
+.frac-input-wrap:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(91,127,166,0.15);
+}
+.frac-input-wrap.error {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px rgba(192,57,43,0.12);
+}
+.frac-stepper-btn {
+  background: var(--surface);
+  border: none; cursor: pointer;
+  color: var(--text-muted);
+  padding: 0 11px;
+  font-size: 1.1rem; font-weight: 500; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 120ms, color 120ms;
+  min-width: 40px; min-height: 44px;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.frac-stepper-btn:active { background: var(--accent-soft); color: var(--accent); }
+.frac-stepper-btn.left { border-right: 1px solid var(--border); }
+.frac-stepper-btn.right { border-left: 1px solid var(--border); }
+.frac-text-input {
+  flex: 1; min-width: 0;
+  background: transparent; border: none;
+  padding: 10px 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px; color: var(--text);
+  text-align: center;
+  width: 100%;
+}
+.frac-text-input:focus { outline: none; }
+.frac-text-input::placeholder { color: var(--text-muted); font-size: 0.85rem; }
+
 /* ── BUTTONS ── */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 7px;
@@ -672,15 +717,27 @@ textarea { resize: vertical; min-height: 64px; }
     <div class="form-row">
       <div class="form-group">
         <label>Width (in)</label>
-        <input type="number" id="input-cab-w" placeholder="36" step="0.0625" min="0.1">
+        <div class="frac-input-wrap" id="wrap-cab-w">
+          <button class="frac-stepper-btn left" data-field="cab-w" data-dir="-1">−</button>
+          <input class="frac-text-input" type="text" inputmode="decimal" id="input-cab-w" placeholder='e.g. 24 3/4'>
+          <button class="frac-stepper-btn right" data-field="cab-w" data-dir="1">+</button>
+        </div>
       </div>
       <div class="form-group">
         <label>Height (in)</label>
-        <input type="number" id="input-cab-h" placeholder="34.5" step="0.0625" min="0.1">
+        <div class="frac-input-wrap" id="wrap-cab-h">
+          <button class="frac-stepper-btn left" data-field="cab-h" data-dir="-1">−</button>
+          <input class="frac-text-input" type="text" inputmode="decimal" id="input-cab-h" placeholder='e.g. 34 1/2'>
+          <button class="frac-stepper-btn right" data-field="cab-h" data-dir="1">+</button>
+        </div>
       </div>
       <div class="form-group">
         <label>Depth (in)</label>
-        <input type="number" id="input-cab-d" placeholder="24" step="0.0625" min="0.1">
+        <div class="frac-input-wrap" id="wrap-cab-d">
+          <button class="frac-stepper-btn left" data-field="cab-d" data-dir="-1">−</button>
+          <input class="frac-text-input" type="text" inputmode="decimal" id="input-cab-d" placeholder='e.g. 12'>
+          <button class="frac-stepper-btn right" data-field="cab-d" data-dir="1">+</button>
+        </div>
       </div>
     </div>
     <div class="form-group" style="margin-bottom:12px;">
@@ -816,18 +873,19 @@ function calcCuts(cab, s) {
     note: 'Fits between sides; groove routed 3/8 in from back edge'
   });
 
-  // Back Panel — fits into groove
-  // Formula from spreadsheet: w_back = width - 2*(grooveOffset - grooveDepth)
-  //                           l_back = height - 2*(grooveOffset - grooveDepth)
-  const backAdj = 2 * (s.grooveOffset - s.grooveDepth);
+  // Back Panel — sits in grooves routed in sides, top, and bottom
+  // Width  = inside cabinet width  (= top/bottom width) + groove depth × 2
+  // Length = inside cabinet height (= side length − top − bottom) + groove depth × 2
+  const insideW = w - 2 * s.carcase;
+  const insideH = h - 2 * s.carcase;
   parts.push({
     part: 'Back Panel',
-    w: w - backAdj,
-    l: h - backAdj,
+    w: insideW + 2 * s.grooveDepth,
+    l: insideH + 2 * s.grooveDepth,
     qty: 1,
     mat: '1/8 in Plywood',
     thick: s.back,
-    note: `Fits into ${toFrac(s.grooveDepth)} in groove routed ${toFrac(s.grooveOffset)} in from back edge`
+    note: `Fits into ${toFrac(s.grooveDepth)}" groove routed ${toFrac(s.grooveOffset)}" from back edge`
   });
 
   // Shelves (if any)
@@ -1150,6 +1208,106 @@ function confirmDeleteProject(id) {
   openModal('modal-confirm');
 }
 
+// ══════════════════════════════════════════
+//  FRACTION INPUT HELPERS
+// ══════════════════════════════════════════
+
+// Parse a user string like "24 3/4", "24-3/4", "24.75", "24" → decimal, or NaN
+function parseFrac(str) {
+  if (!str) return NaN;
+  str = str.trim().replace(/"+$/, '').trim();
+  // Pure decimal
+  if (/^[\d.]+$/.test(str)) return parseFloat(str);
+  // "whole frac" or "whole-frac" e.g. "24 3/4" or "24-3/4"
+  const m = str.match(/^(\d+)\s*[-\s]\s*(\d+)\s*\/\s*(\d+)$/);
+  if (m) return parseInt(m[1]) + parseInt(m[2]) / parseInt(m[3]);
+  // Bare fraction e.g. "3/4"
+  const f = str.match(/^(\d+)\s*\/\s*(\d+)$/);
+  if (f) return parseInt(f[1]) / parseInt(f[2]);
+  return NaN;
+}
+
+// Format a decimal as a fraction string e.g. 24.75 → "24 3/4"
+// Resolution: 1/16"
+const FRAC_MAP = [
+  [0,''], [1/16,'1/16'], [1/8,'1/8'], [3/16,'3/16'],
+  [1/4,'1/4'], [5/16,'5/16'], [3/8,'3/8'], [7/16,'7/16'],
+  [1/2,'1/2'], [9/16,'9/16'], [5/8,'5/8'], [11/16,'11/16'],
+  [3/4,'3/4'], [13/16,'13/16'], [7/8,'7/8'], [15/16,'15/16']
+];
+function formatFrac(val) {
+  if (isNaN(val) || val === null) return '';
+  val = Math.max(0, val);
+  const whole = Math.floor(val);
+  let frac = val - whole;
+  // Snap to nearest 1/16
+  let best = FRAC_MAP[0], bestDist = Infinity;
+  for (const [dec, str] of FRAC_MAP) {
+    const d = Math.abs(frac - dec);
+    if (d < bestDist) { bestDist = d; best = [dec, str]; }
+  }
+  // If fraction rounds up to 1, carry
+  if (best[0] >= 1) return String(whole + 1);
+  const parts = [];
+  if (whole || !best[1]) parts.push(whole);
+  if (best[1]) parts.push(best[1]);
+  return parts.join(' ');
+}
+
+// Get the decimal value stored in a frac input (or NaN)
+function getFracVal(id) {
+  return parseFrac(document.getElementById(id).value);
+}
+
+// Set a frac input to a formatted display value
+function setFracVal(id, val) {
+  const inp = document.getElementById(id);
+  const wrap = inp.closest('.frac-input-wrap');
+  if (isNaN(val) || val <= 0) {
+    inp.value = val <= 0 ? formatFrac(0) : '';
+    if (wrap) wrap.classList.toggle('error', isNaN(val));
+    return;
+  }
+  inp.value = formatFrac(val);
+  if (wrap) wrap.classList.remove('error');
+}
+
+// Step a frac input by ±1/8"
+function stepFracInput(fieldId, dir) {
+  const STEP = 1/8;
+  let val = getFracVal(fieldId);
+  if (isNaN(val)) val = 0;
+  val = Math.round(val / STEP) * STEP; // snap to grid first
+  val = Math.max(0, val + dir * STEP);
+  setFracVal(fieldId, val);
+}
+
+// On blur: reformat whatever was typed, or flag error
+function blurFracInput(id) {
+  const val = getFracVal(id);
+  const inp = document.getElementById(id);
+  const wrap = inp.closest('.frac-input-wrap');
+  if (isNaN(val)) {
+    if (wrap) wrap.classList.add('error');
+  } else {
+    setFracVal(id, val);
+    if (wrap) wrap.classList.remove('error');
+  }
+}
+
+function initFracSteppers() {
+  document.querySelectorAll('.frac-stepper-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      stepFracInput(btn.dataset.field, parseInt(btn.dataset.dir));
+    });
+  });
+  ['cab-w','cab-h','cab-d'].forEach(id => {
+    const inp = document.getElementById('input-' + id);
+    if (!inp) return;
+    inp.addEventListener('blur', () => blurFracInput('input-' + id));
+  });
+}
+
 function openAddCabinet() {
   editingCabinetId = null;
   document.getElementById('modal-cabinet-title').textContent = 'Add Cabinet';
@@ -1159,6 +1317,9 @@ function openAddCabinet() {
   document.getElementById('input-cab-d').value = '';
   document.getElementById('input-cab-shelves').value = '0';
   document.getElementById('input-cab-notes').value = '';
+  ['input-cab-w','input-cab-h','input-cab-d'].forEach(id => {
+    document.getElementById(id).closest('.frac-input-wrap').classList.remove('error');
+  });
   openModal('modal-cabinet');
   setTimeout(() => document.getElementById('input-cab-name').focus(), 300);
 }
@@ -1169,23 +1330,26 @@ function openEditCabinet(cid) {
   if (!cab) return;
   document.getElementById('modal-cabinet-title').textContent = 'Edit Cabinet';
   document.getElementById('input-cab-name').value = cab.name;
-  document.getElementById('input-cab-w').value = cab.w;
-  document.getElementById('input-cab-h').value = cab.h;
-  document.getElementById('input-cab-d').value = cab.d;
+  setFracVal('input-cab-w', cab.w);
+  setFracVal('input-cab-h', cab.h);
+  setFracVal('input-cab-d', cab.d);
   document.getElementById('input-cab-shelves').value = cab.shelves;
   document.getElementById('input-cab-notes').value = cab.notes || '';
   openModal('modal-cabinet');
 }
 function saveCabinet() {
   const name = document.getElementById('input-cab-name').value.trim();
-  const w = parseFloat(document.getElementById('input-cab-w').value);
-  const h = parseFloat(document.getElementById('input-cab-h').value);
-  const d = parseFloat(document.getElementById('input-cab-d').value);
+  const w = getFracVal('input-cab-w');
+  const h = getFracVal('input-cab-h');
+  const d = getFracVal('input-cab-d');
   const shelves = parseInt(document.getElementById('input-cab-shelves').value) || 0;
   const notes = document.getElementById('input-cab-notes').value.trim();
 
-  if (!name || isNaN(w) || isNaN(h) || isNaN(d)) {
-    showToast('Please fill in name and dimensions');
+  if (!name || isNaN(w) || isNaN(h) || isNaN(d) || w <= 0 || h <= 0 || d <= 0) {
+    showToast('Please fill in name and valid dimensions');
+    if (isNaN(w) || w <= 0) document.getElementById('input-cab-w').closest('.frac-input-wrap').classList.add('error');
+    if (isNaN(h) || h <= 0) document.getElementById('input-cab-h').closest('.frac-input-wrap').classList.add('error');
+    if (isNaN(d) || d <= 0) document.getElementById('input-cab-d').closest('.frac-input-wrap').classList.add('error');
     return;
   }
   const project = state.projects.find(p => p.id === state.activeProjectId);
@@ -1329,6 +1493,7 @@ function esc(s) {
 document.addEventListener('DOMContentLoaded', () => {
   loadState();
   renderProjects();
+  initFracSteppers();
 
   // Nav
   document.querySelectorAll('.nav-btn').forEach(btn => {
