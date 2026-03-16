@@ -714,30 +714,28 @@ textarea { resize: vertical; min-height: 64px; }
       <label>Cabinet Name</label>
       <input type="text" id="input-cab-name" placeholder="e.g. Upper Left, Base Sink…">
     </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label>Width (in)</label>
-        <div class="frac-input-wrap" id="wrap-cab-w">
-          <button class="frac-stepper-btn left" data-field="cab-w" data-dir="-1">−</button>
-          <input class="frac-text-input" type="text" inputmode="decimal" id="input-cab-w" placeholder='e.g. 24 3/4'>
-          <button class="frac-stepper-btn right" data-field="cab-w" data-dir="1">+</button>
-        </div>
+    <div class="form-group" style="margin-bottom:12px;">
+      <label>Width (in)</label>
+      <div class="frac-input-wrap" id="wrap-cab-w">
+        <button class="frac-stepper-btn left" data-field="input-cab-w" data-dir="-1">−</button>
+        <input class="frac-text-input" type="text" inputmode="text" id="input-cab-w" placeholder='e.g. 24 3/4'>
+        <button class="frac-stepper-btn right" data-field="input-cab-w" data-dir="1">+</button>
       </div>
-      <div class="form-group">
-        <label>Height (in)</label>
-        <div class="frac-input-wrap" id="wrap-cab-h">
-          <button class="frac-stepper-btn left" data-field="cab-h" data-dir="-1">−</button>
-          <input class="frac-text-input" type="text" inputmode="decimal" id="input-cab-h" placeholder='e.g. 34 1/2'>
-          <button class="frac-stepper-btn right" data-field="cab-h" data-dir="1">+</button>
-        </div>
+    </div>
+    <div class="form-group" style="margin-bottom:12px;">
+      <label>Height (in)</label>
+      <div class="frac-input-wrap" id="wrap-cab-h">
+        <button class="frac-stepper-btn left" data-field="input-cab-h" data-dir="-1">−</button>
+        <input class="frac-text-input" type="text" inputmode="text" id="input-cab-h" placeholder='e.g. 34 1/2'>
+        <button class="frac-stepper-btn right" data-field="input-cab-h" data-dir="1">+</button>
       </div>
-      <div class="form-group">
-        <label>Depth (in)</label>
-        <div class="frac-input-wrap" id="wrap-cab-d">
-          <button class="frac-stepper-btn left" data-field="cab-d" data-dir="-1">−</button>
-          <input class="frac-text-input" type="text" inputmode="decimal" id="input-cab-d" placeholder='e.g. 12'>
-          <button class="frac-stepper-btn right" data-field="cab-d" data-dir="1">+</button>
-        </div>
+    </div>
+    <div class="form-group" style="margin-bottom:12px;">
+      <label>Depth (in)</label>
+      <div class="frac-input-wrap" id="wrap-cab-d">
+        <button class="frac-stepper-btn left" data-field="input-cab-d" data-dir="-1">−</button>
+        <input class="frac-text-input" type="text" inputmode="text" id="input-cab-d" placeholder='e.g. 12'>
+        <button class="frac-stepper-btn right" data-field="input-cab-d" data-dir="1">+</button>
       </div>
     </div>
     <div class="form-group" style="margin-bottom:12px;">
@@ -1301,10 +1299,10 @@ function initFracSteppers() {
       stepFracInput(btn.dataset.field, parseInt(btn.dataset.dir));
     });
   });
-  ['cab-w','cab-h','cab-d'].forEach(id => {
-    const inp = document.getElementById('input-' + id);
+  ['input-cab-w','input-cab-h','input-cab-d'].forEach(id => {
+    const inp = document.getElementById(id);
     if (!inp) return;
-    inp.addEventListener('blur', () => blurFracInput('input-' + id));
+    inp.addEventListener('blur', () => blurFracInput(id));
   });
 }
 
